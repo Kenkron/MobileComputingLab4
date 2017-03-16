@@ -45,7 +45,7 @@ git add newfile
 git commit -a -m "A comment describing what you did"
 ```
 
-Someone else changed the code.  How do I get those changed on my computer?
+Someone else changed the code.  How do I get those changes on my computer?
 --------------------------------------------------------------------------
 
 Pull it:
