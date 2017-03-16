@@ -48,6 +48,8 @@ git commit -a -m "A comment describing what you did"
 Someone else changed the code.  How do I see it?
 ------------------------------------------------
 
+Pull it:
+
 ```
 git pull
 ```
@@ -66,3 +68,27 @@ void main() {
 ```
 
 Figure out which of those two things is correct, fix it, then commit the changes.  Then complain to the other person that changed your file.
+
+My cat walked on my keyboard. How do I go back to the last checkpoint (commit)?
+-------------------------------------------------------------------------------
+
+First, if you want, you can use `git status` to see which files changed.
+
+Second, if you just want to get back to the way thing were last time you comitted, run this:
+
+```
+git reset --hard HEAD
+```
+
+I made a commit and pushed it, but I changed my mind. I want that commit to go away.
+------------------------------------------------------------------------------------
+
+Too bad! By the time you've figured this out, everyone else in your project has already pulled your changes.  If you try to delete them now, then it won't delete it on everyone else's computers, even if you get it to change on github.
+
+You need to make a **new** commit that undoes the changes of that earlier commit.  That way, git is able to tell that this stuff is supposed to be undone.  You can do this with revert:
+
+```
+# Makes a new commit that undoes the last commit
+git revert HEAD
+# Now, everyone else's computers know what to do with that last commit you wanted to undo
+```
