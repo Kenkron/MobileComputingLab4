@@ -99,3 +99,10 @@ git revert HEAD --no-edit
 git push
 # Now, everyone else's computers know what to do with that last commit you wanted to undo
 ```
+
+I want to see a list of past commits.
+-------------------------------------
+
+```
+git log
+```
