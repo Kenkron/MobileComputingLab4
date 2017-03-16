@@ -95,6 +95,7 @@ You need to make a **new** commit that undoes the changes of that earlier commit
 
 ```
 # Makes a new commit that undoes the last commit
-git revert HEAD
+git revert HEAD --no-edit
+git push
 # Now, everyone else's computers know what to do with that last commit you wanted to undo
 ```
