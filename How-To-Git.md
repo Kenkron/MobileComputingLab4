@@ -69,6 +69,12 @@ void main() {
 
 Figure out which of those two things is correct, fix it, then commit the changes.  Then complain to the other person that changed your file.
 
+```
+void main() {
+	printf("I like banannas")
+}
+```
+
 My cat walked on my keyboard. How do I go back to the last checkpoint (commit)?
 -------------------------------------------------------------------------------
 
