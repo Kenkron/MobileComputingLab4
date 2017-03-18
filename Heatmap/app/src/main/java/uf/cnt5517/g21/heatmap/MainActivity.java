@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final String TAG = "Heatmap.MainActivity";
 
     GoogleApiClient mGoogleApiClient;
+    Networking mqtt;
 
     public void toast(String text){
         Context context = getApplicationContext();
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .addConnectionCallbacks(this)
                 .enableAutoManage(this, this)
                 .build();
+
+        mqtt = new Networking(this, "localhost:8080", "Android:"+System.currentTimeMillis());
     }
 
     @Override
