@@ -1,6 +1,8 @@
 package uf.cnt5517.g21.heatmap;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -10,6 +12,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.MonitorNotifier;
+import org.altbeacon.beacon.Region;
+
 import java.io.IOException;
 import java.net.Socket;
 
@@ -17,7 +24,7 @@ import java.net.Socket;
  * Created by kenkron on 3/18/17.
  */
 
-public class Networking{
+public class Networking {
 
     public static final String TAG = "Heatmap.Networking";
 
@@ -52,7 +59,7 @@ public class Networking{
 
     public void lostBeacon(String beaconUUID){
         StringRequest request = new StringRequest(Request.Method.POST,
-                serverUri + "/lost?client=" + clientID + "&uuid=" + beaconUUID,
+                serverUri + "/lost?client=" + clientID + "& uuid=" + beaconUUID,
                 new Response.Listener<String>(){
                     @Override
                     public void onResponse(String response) {
@@ -62,7 +69,7 @@ public class Networking{
                 new Response.ErrorListener(){
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.e(TAG, "Could not tell server about the new beacon", error);
+                        Log.e(TAG, "Could not tell server about the old beacon", error);
                     }
                 });
         server.add(request);
