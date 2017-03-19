@@ -46,11 +46,12 @@ public class Networking implements MqttCallbackExtended{
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     //mqtt.setBufferOpts(disconnectedBufferOptions);
                     //subscribeToTopic();
+                    Log.e(TAG, "Connected to");
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    addToHistory("Failed to connect to: " + serverUri);
+                    Log.e(TAG, "Failed to connect: " + asyncActionToken, exception);
                 }
             });
             Log.d(TAG, "Initialized: " + clientID);
