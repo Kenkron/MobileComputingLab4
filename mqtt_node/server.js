@@ -6,13 +6,13 @@
  * 
  * Refer to the portions surrounded by --- for points of interest
  */
-var express   = require('express'),
-	app       = express();
-var pug       = require('pug');
-var sockets   = require('socket.io');
-var path      = require('path');
+var express = require('express'),
+	app = express();
+var pug = require('pug');
+var sockets = require('socket.io');
+var path = require('path');
 
-var conf      = require(path.join(__dirname, 'config'));
+var conf = require(path.join(__dirname, 'config'));
 var internals = require(path.join(__dirname, 'internals'));
 
 // -- Setup the application
@@ -30,14 +30,16 @@ function socket_handler(socket, mqtt) {
 	// Called when a client connects
 	mqtt.on('clientConnected', client => {
 		socket.emit('debug', {
-			type: 'CLIENT', msg: 'New client connected: ' + client.id
+			type: 'CLIENT',
+			msg: 'New client connected: ' + client.id
 		});
 	});
 
 	// Called when a client disconnects
 	mqtt.on('clientDisconnected', client => {
 		socket.emit('debug', {
-			type: 'CLIENT', msg: 'Client "' + client.id + '" has disconnected'
+			type: 'CLIENT',
+			msg: 'Client "' + client.id + '" has disconnected'
 		});
 	});
 
@@ -46,7 +48,7 @@ function socket_handler(socket, mqtt) {
 		if (!client) return;
 
 		socket.emit('debug', {
-			type: 'PUBLISH', 
+			type: 'PUBLISH',
 			msg: 'Client "' + client.id + '" published "' + JSON.stringify(data) + '"'
 		});
 	});
@@ -86,8 +88,23 @@ function setupExpress() {
 	// ------------------------------------------------------------------------
 	// Home page
 	app.get('/', (req, res) => {
-		res.render('index', {title: 'MQTT Tracker'});
+		res.render('index', {
+			title: 'MQTT Tracker'
+		});
 	});
+
+
+    app.post('/found', (req, res) => {
+        var client = req.param("client");
+        var beacon = req.param("uuid");
+        console.log(client + " found " + beacon);
+    });
+
+    app.post('/lost', (req, res) => {
+        var client = req.param("client");
+        var beacon = req.param("uuid");
+        console.log(client + " lost " + beacon);
+    });
 
 	// Basic 404 Page
 	app.use((req, res, next) => {
@@ -106,8 +123,12 @@ function setupExpress() {
 		console.log("Error found: ", err);
 		res.status(err.status || 500);
 
-		res.render('error', {title: 'Error', error: err.message});
+		res.render('error', {
+			title: 'Error',
+			error: err.message
+		});
 	});
+
 	// ------------------------------------------------------------------------
 
 	// Handle killing the server
@@ -128,7 +149,7 @@ function setupSocket() {
 		});
 	});
 
-	server.listen(conf.PORT, conf.HOST, () => { 
+	server.listen(conf.PORT, conf.HOST, () => {
 		console.log("Listening on: " + conf.HOST + ":" + conf.PORT);
 	});
 }

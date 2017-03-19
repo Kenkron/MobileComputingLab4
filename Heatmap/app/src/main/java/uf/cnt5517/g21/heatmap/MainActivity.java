@@ -40,12 +40,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .enableAutoManage(this, this)
                 .build();
 
-        mqtt = new Networking(this, "tcp://10.136.4.205:1883", "Android_"+System.currentTimeMillis());
+        mqtt = new Networking(this, "http://10.136.4.205:8080", "Android_"+System.currentTimeMillis());
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         toast("[onConnected] bundle: " + bundle);
+        mqtt.foundBeacon("something");
     }
 
     @Override

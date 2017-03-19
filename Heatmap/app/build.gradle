@@ -19,12 +19,6 @@ android {
     }
 }
 
-repositories {
-    maven {
-        url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
-    }
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -32,9 +26,9 @@ dependencies {
     })
     // Enable nearby API
     compile 'com.google.android.gms:play-services-nearby:9.0.0'
-    // MQTT library
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
-    compile 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+
+    // REST API
+    compile 'com.android.volley:volley:1.0.0'
 
     compile 'com.android.support:appcompat-v7:25.1.0'
     testCompile 'junit:junit:4.12'
