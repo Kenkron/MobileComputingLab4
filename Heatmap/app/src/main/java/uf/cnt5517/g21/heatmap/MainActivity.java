@@ -19,12 +19,13 @@ import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.Identifier;
+import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
 import java.util.Collection;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, BeaconConsumer, RangeNotifier{
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, BeaconConsumer, MonitorNotifier, RangeNotifier{
 
     public static final String TAG = "Heatmap.MainActivity";
 
@@ -62,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onResume();
         beaconManager = BeaconManager.getInstanceForApplication(this);
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
+        beaconManager.addRangeNotifier(this);
+        beaconManager.addMonitorNotifier(this);
         beaconManager.bind(this);
     }
 
@@ -104,12 +107,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });*/
 
         try {
-            beaconManager.startRangingBeaconsInRegion(region);
+            beaconManager.startMonitoringBeaconsInRegion(region);
             Log.d(TAG, "started monitoring beacons");
         } catch (RemoteException e) {
             Log.e(TAG, "Something went wrong trying to monitor beacons", e);
         }
-        beaconManager.addRangeNotifier(this);
     }
 
     @Override
@@ -135,5 +137,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 //                });
             }
         }
+    }
+
+    @Override
+    public void didEnterRegion(Region region) {
+        Log.i(TAG, "I just saw an beacon for the first time!\n\t"+region);
+        restful.foundBeacon(region.getId1().toString()+":"+region.getId2());
+    }
+
+    @Override
+    public void didExitRegion(Region region) {
+        Log.i(TAG, "I no longer see an beacon\n\t"+region);
+        restful.lostBeacon(region.getId1().toString()+":"+region.getId2());
+    }
+
+    @Override
+    public void didDetermineStateForRegion(int state, Region region) {
+        Log.i(TAG, "I have just switched from seeing/not seeing beacons: "+state);
     }
 }
