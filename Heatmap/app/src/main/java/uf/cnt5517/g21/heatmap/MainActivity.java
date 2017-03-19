@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onBeaconServiceConnect() {
-        Region region = new Region("my-beacon-region", null, null, null);
+        Region region = new Region("BlueCats", null, null, null);
 
         /*beaconManager.addMonitorNotifier(new MonitorNotifier() {
             @Override
