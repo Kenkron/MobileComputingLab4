@@ -11,6 +11,10 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.nearby.Nearby;
+import com.google.android.gms.nearby.messages.Message;
+import com.google.android.gms.nearby.messages.MessageListener;
+import com.google.android.gms.nearby.messages.Strategy;
+import com.google.android.gms.nearby.messages.SubscribeOptions;
 
 import java.sql.Connection;
 
@@ -19,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final String TAG = "Heatmap.MainActivity";
 
     GoogleApiClient mGoogleApiClient;
-    Networking mqtt;
+    Networking broker;
 
     public void toast(String text){
         Context context = getApplicationContext();
@@ -40,13 +44,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .enableAutoManage(this, this)
                 .build();
 
-        mqtt = new Networking(this, "http://10.136.4.205:8080", "Android_"+System.currentTimeMillis());
+        broker = new Networking(this, "http://192.168.0.30:8080", "Android_"+System.currentTimeMillis());
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         toast("[onConnected] bundle: " + bundle);
-        mqtt.foundBeacon("something");
+        Nearby.Messages.subscribe(mGoogleApiClient, new MessageListener() {
+            @Override
+            public void onFound(Message message) {
+                Log.i(TAG, "Found : " + message);
+                broker.foundBeacon("message");
+            }
+
+            @Override
+            public void onLost(Message message) {
+                Log.i(TAG, "Lost : " + message);
+                broker.lostBeacon("message");
+            }
+        }, new SubscribeOptions.Builder()
+                .setStrategy(Strategy.BLE_ONLY)
+                .build());
     }
 
     @Override
