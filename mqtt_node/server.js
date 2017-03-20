@@ -31,7 +31,7 @@ function socket_handler(socket, mqtt) {
 	mqtt.on('clientConnected', client => {
 		socket.emit('debug', {
 			type: 'CLIENT',
-			msg: 'New client connected: ' + client.id
+			msg: '{connected: true, clientId: "' + client.id +'"}'
 		});
 	});
 
@@ -39,7 +39,7 @@ function socket_handler(socket, mqtt) {
 	mqtt.on('clientDisconnected', client => {
 		socket.emit('debug', {
 			type: 'CLIENT',
-			msg: 'Client "' + client.id + '" has disconnected'
+			msg: '{connected: false, clientId: "' + client.id + '"'
 		});
 	});
 
@@ -49,7 +49,7 @@ function socket_handler(socket, mqtt) {
 
 		socket.emit('debug', {
 			type: 'PUBLISH',
-			msg: 'Client "' + client.id + '" published "' + JSON.stringify(data) + '"'
+			msg: '{ client: "' + client.id + '", published : ' + JSON.stringify(data) + '}'
 		});
 	});
 

@@ -17,7 +17,7 @@ block content
 			// Implement the graphics portion in the canvas supplied below
 			div.well
 				canvas(id='grid')
-	
+
 	div(class='panel')
 		div.panel-body
 			button(class='btn btn-primary', type='button', data-toggle='collapse', data-target='#debugLog', aria-expanded='false', aria-controls='debugLog') Show Debug Log
@@ -27,6 +27,8 @@ block content
 //- The scripts needed by this page
 block scripts
 	script(type='text/javascript').
+		//a list of clients that might report populations on the 'map'
+		var clients = [];
 		$(() => {
 			var socket = io();
 
@@ -36,14 +38,47 @@ block scripts
 			socket.on('debug', data => {
 				var time = new Date();
 				$('#debugLogList').append('<div>' + time + ': ' + data.type + ' | ' + data.msg + '</div>');
+
+
+				if (data.type === 'PUBLISH') {
+					var message = JSON.parse(data.msg);
+					clients[message.clients] = message.published;
+				}
+
+				if (data.type === 'CLIENT') {
+					var message = JSON.parse(data.msg);
+					if (message.connected){
+						clients[message.clientId] = {};
+					} else {
+						delete clients[message.clientId];
+					}
+				}
+
+				render();
 			});
+
 			//--------------------------
 		});
 	
 	script(type='text/javascript').
-		$(() => {
-			// Handle any canvas code here
-			//----------------------------
-			var canv = $('#grid');
-			//----------------------------
-		});
+		// Handle any canvas code here
+		//----------------------------
+		var canv = $('#grid');
+
+		function render(){
+			for (var i = 0; i < clients.length; i++){
+				var x = (i % 10) * 20 + 10;
+				var y = Math.floor(i/10) * 20 + 10;
+				var radius = 5 + clients[i].count/10;
+				var ctx = canv.getContext();
+				ctx.fillStyle = "white";
+				ctx.beginPath();
+				ctx.rect(0,0, 200, 200);
+				ctx.fill();
+				ctx.fillStyle = "green";
+				ctx.beginPath();
+				ctx.ellipse(x, y, radius, 0, 0, Math.PI*2);
+				ctx.fill();
+			}
+		}
+		//----------------------------
