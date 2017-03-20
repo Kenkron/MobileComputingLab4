@@ -72,25 +72,12 @@ function socket_handler(socket, mqtt) {
         //get the payload as a string
         message = data.payload.toString().trim();
 
-        if (message.indexOf('add')==0){
-            counters[client.id]++;
-            socket.emit('debug', {
-                type: 'UPDATE',
-                msg: JSON.stringify({client: client.id, 
-                count: counters[client.id]})
-            });
-            return;
-        }
-
-        if (message.indexOf('sub')==0){
-            if (counters[client.id] > 0) counters[client.id]--;
-            socket.emit('debug', {
-                type: 'UPDATE',
-                msg: JSON.stringify({client: client.id, 
-                count: counters[client.id].count})
-            });
-            return;
-        }
+        socket.emit('debug', {
+            type: 'UPDATE',
+            client: client.id,
+            msg: message
+        });
+        return;
 
 		socket.emit('debug', {
 			type: 'PUBLISH',
