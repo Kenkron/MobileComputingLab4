@@ -28,7 +28,7 @@ block content
 block scripts
 	script(type='text/javascript').
 		//a list of clients that might report populations on the 'map'
-		var clients = [];
+		var clients = {};
 		$(() => {
 			var socket = io();
 
@@ -39,23 +39,14 @@ block scripts
 				var time = new Date();
 				$('#debugLogList').append('<div>' + time + ': ' + data.type + ' | ' + data.msg + '</div>');
 
-
-				if (data.type === 'PUBLISH') {
-					var message = JSON.parse(data.msg);
-					clients[message.clients] = message.published;
+				if (data.type === 'UPDATE'){
+					console.log(data);
+					var msg = JSON.parse(data.msg);
+					if (!clients[msg.client]) clients[msg.client] = {};
+					clients[msg.client].count = msg.count;
+					render();
 				}
-
-				if (data.type === 'CLIENT') {
-					var message = JSON.parse(data.msg);
-					if (message.connected){
-						clients[message.clientId] = {};
-					} else {
-						delete clients[message.clientId];
-					}
-				}
-
-				render();
-			});
+			})
 
 			//--------------------------
 		});
@@ -63,21 +54,27 @@ block scripts
 	script(type='text/javascript').
 		// Handle any canvas code here
 		//----------------------------
-		var canv = $('#grid');
-
+		var canv = $('#grid')[0];
+		
 		function render(){
-			for (var i = 0; i < clients.length; i++){
-				var x = (i % 10) * 20 + 10;
-				var y = Math.floor(i/10) * 20 + 10;
-				var radius = 5 + clients[i].count/10;
-				var ctx = canv.getContext();
+			canv.width = canv.clientWidth;
+			canv.height = canv.width;
+			var keys = Object.keys(clients);
+			for (var i = 0; i < keys.length; i++){
+				var px = canv.height/100;
+				var width = canv.width/px;
+				var key = keys[i];
+				var x = (i % 10) * 10 + 5 + (width - 100)/2;
+				var y = Math.floor(i/10) * 10 + 5;
+				var radius = 1 + clients[key].count/4;
+				var ctx = canv.getContext('2d');
 				ctx.fillStyle = "white";
 				ctx.beginPath();
-				ctx.rect(0,0, 200, 200);
+				ctx.rect(0,0, 100*px, 100*px);
 				ctx.fill();
 				ctx.fillStyle = "green";
 				ctx.beginPath();
-				ctx.ellipse(x, y, radius, 0, 0, Math.PI*2);
+				ctx.ellipse(x * px, y * px, radius * px, radius * px, 0, Math.PI*2, false);
 				ctx.fill();
 			}
 		}

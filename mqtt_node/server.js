@@ -19,6 +19,15 @@ var internals = require(path.join(__dirname, 'internals'));
 setupExpress();
 setupSocket();
 
+function bytes2String(bytes){
+    var i = 0;
+    var result = '';
+    while (i < bytes.length && bytes[i] != 0){
+        result = result + String.fromCharCode();
+        i ++;
+    }
+    return result;
+}
 
 // -- Socket Handler
 // Here is where you should handle socket/mqtt events
@@ -26,30 +35,66 @@ setupSocket();
 // events. Refer to the documentation for more info 
 // -> https://github.com/mcollina/mosca/wiki/Mosca-basic-usage
 // ----------------------------------------------------------------------------
+
+//stores counters for each source
+counters = {};
+
 function socket_handler(socket, mqtt) {
 	// Called when a client connects
 	mqtt.on('clientConnected', client => {
+        console.log("Client Connected: " + client.id);
 		socket.emit('debug', {
 			type: 'CLIENT',
-			msg: '{connected: true, clientId: "' + client.id +'"}'
+			msg: '{"connected": "true", "clientId": "' + client.id +'"}'
 		});
 	});
 
 	// Called when a client disconnects
 	mqtt.on('clientDisconnected', client => {
+        console.log("Client Disconnected: " + client.id);
 		socket.emit('debug', {
 			type: 'CLIENT',
-			msg: '{connected: false, clientId: "' + client.id + '"'
+			msg: '{"connected": "false", "clientId": "' + client.id + '"'
 		});
 	});
 
 	// Called when a client publishes data
 	mqtt.on('published', (data, client) => {
 		if (!client) return;
+        console.log('[Publication] Client: ' + client.id + ', Published: ' + JSON.stringify(data));
+
+        //if there isn't a counter for this client yet, make one
+        if (!counters[client.id]) counters[client.id] = {
+            count: 0,
+            max: 0
+        };
+
+        //get the payload as a string
+        message = data.payload.toString().trim();
+
+        if (message.indexOf('add')==0){
+            counters[client.id]++;
+            socket.emit('debug', {
+                type: 'UPDATE',
+                msg: JSON.stringify({client: client.id, 
+                count: counters[client.id]})
+            });
+            return;
+        }
+
+        if (message.indexOf('sub')==0){
+            if (counters[client.id] > 0) counters[client.id]--;
+            socket.emit('debug', {
+                type: 'UPDATE',
+                msg: JSON.stringify({client: client.id, 
+                count: counters[client.id].count})
+            });
+            return;
+        }
 
 		socket.emit('debug', {
 			type: 'PUBLISH',
-			msg: '{ client: "' + client.id + '", published : ' + JSON.stringify(data) + '}'
+			msg: '{ "client": "' + client.id + '", "published" : "' + message + '""}'
 		});
 	});
 
@@ -92,7 +137,6 @@ function setupExpress() {
 			title: 'MQTT Tracker'
 		});
 	});
-
 
     app.post('/found', (req, res) => {
         var client = req.param("client");
