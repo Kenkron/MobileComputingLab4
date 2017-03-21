@@ -1,7 +1,7 @@
+README.txt
+----------------------------------------------------------------------------------------------------------------------------
 Description what you did, what worked, what did not. Any extras,
 any challenges, and anything else you want to communicate.
-----------------------------------------------------------------------------------------------------------------------------
-README.txt
 
 What We Did:
 This Lab 4 had several components that tied into each other for the final lab result. What we did was provide the webpage with Node.js capabilities with a REST API on one end connecting to the Android application and MQTT on the other connecting to the MBED board.
