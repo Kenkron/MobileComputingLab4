@@ -107,6 +107,20 @@ function socket_handler(socket, mqtt) {
 }
 // ----------------------------------------------------------------------------
 
+//an object to hold the beacons
+beacons = {}
+
+function publishBeacon(uid){
+    if (!beacons[beacon]){
+        console.log('no such beacon');
+        return;
+    }    
+    internals.mosca.publish({
+        topic: 'android',
+        type: 'android',
+        payload: '{"type": "ANDROID", "count": "'+beacons[beacon]+'", "uid": "'+beacon+'"}'
+    });
+}
 
 // Helper functions
 function setupExpress() {
@@ -126,15 +140,31 @@ function setupExpress() {
 	});
 
     app.post('/found', (req, res) => {
-        var client = req.param("client");
-        var beacon = req.param("uuid");
-        console.log(client + " found " + beacon);
+        console.log(JSON.stringify(req.params));
+        console.log(req.url);
+        var beacon = req.params.uid;
+        if (!beacons[beacon]) beacons[beacon] = 0;
+        beacons[beacon]++;
+        console.log("found " + beacon);
+        publishBeacon(beacon);
     });
 
     app.post('/lost', (req, res) => {
-        var client = req.param("client");
-        var beacon = req.param("uuid");
-        console.log(client + " lost " + beacon);
+        var beacon = req.param("uid");
+        if (beacons[beacon]){
+            console.log("lost " + beacon);
+            beacons[beacon]--;
+            internals.mosca.publish({
+                topic: 'android',
+                type: 'android',
+                payload: '{"type": "ANDROID", "count": "'+beacons[beacon]+'", "uid": "'+beacon+'"}'
+            });
+            if (beacons[beacon] == 0){
+                delete beacons[beacon];
+            }
+        }else{
+            console.log("lost missing beacon");
+        }
     });
 
 	// Basic 404 Page
