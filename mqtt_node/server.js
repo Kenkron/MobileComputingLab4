@@ -7,7 +7,7 @@
  * Refer to the portions surrounded by --- for points of interest
  */
 var express = require('express'),
-	app = express();
+    app = express();
 var pug = require('pug');
 var sockets = require('socket.io');
 var path = require('path');
@@ -19,12 +19,12 @@ var internals = require(path.join(__dirname, 'internals'));
 setupExpress();
 setupSocket();
 
-function bytes2String(bytes){
+function bytes2String(bytes) {
     var i = 0;
     var result = '';
-    while (i < bytes.length && bytes[i] != 0){
+    while (i < bytes.length && bytes[i] != 0) {
         result = result + String.fromCharCode();
-        i ++;
+        i++;
     }
     return result;
 }
@@ -40,27 +40,28 @@ function bytes2String(bytes){
 counters = {};
 
 function socket_handler(socket, mqtt) {
-	// Called when a client connects
-	mqtt.on('clientConnected', client => {
+    // Called when a client connects
+    mqtt.on('clientConnected', client => {
         console.log("Client Connected: " + client.id);
-		socket.emit('debug', {
-			type: 'CLIENT',
-			msg: '{"connected": "true", "clientId": "' + client.id +'"}'
-		});
-	});
+        socket.emit('debug', {
+            type: 'CLIENT',
+            msg: '{"connected": "true", "clientId": "' + client.id + '"}'
+        });
+    });
 
-	// Called when a client disconnects
-	mqtt.on('clientDisconnected', client => {
+    // Called when a client disconnects
+    mqtt.on('clientDisconnected', client => {
         console.log("Client Disconnected: " + client.id);
-		socket.emit('debug', {
-			type: 'CLIENT',
-			msg: '{"connected": "false", "clientId": "' + client.id + '"'
-		});
-	});
+        socket.emit('debug', {
+            type: 'CLIENT',
+            msg: '{"connected": "false", "clientId": "' + client.id + '"'
+        });
+    });
 
-	// Called when a client publishes data
-	mqtt.on('published', (data, client) => {
-		if (!client) return;
+    // Called when a client publishes data
+    mqtt.on('published', (data, client) => {
+        console.log('client: ' + client)
+        if (!client) return;
         console.log('[Publication] Client: ' + client.id + ', Published: ' + JSON.stringify(data));
 
         //if there isn't a counter for this client yet, make one
@@ -79,70 +80,68 @@ function socket_handler(socket, mqtt) {
         });
         return;
 
-		socket.emit('debug', {
-			type: 'PUBLISH',
-			msg: '{ "client": "' + client.id + '", "published" : "' + message + '""}'
-		});
-	});
+        socket.emit('debug', {
+            type: 'PUBLISH',
+            msg: '{ "client": "' + client.id + '", "published" : "' + message + '""}'
+        });
+    });
 
-	// Called when a client subscribes
-	mqtt.on('subscribed', (topic, client) => {
-		if (!client) return;
+    // Called when a client subscribes
+    mqtt.on('subscribed', (topic, client) => {
+        if (!client) return;
 
-		socket.emit('debug', {
-			type: 'SUBSCRIBE',
-			msg: 'Client "' + client.id + '" subscribed to "' + topic + '"'
-		});
-	});
+        socket.emit('debug', {
+            type: 'SUBSCRIBE',
+            msg: 'Client "' + client.id + '" subscribed to "' + topic + '"'
+        });
+    });
 
-	// Called when a client unsubscribes
-	mqtt.on('unsubscribed', (topic, client) => {
-		if (!client) return;
+    // Called when a client unsubscribes
+    mqtt.on('unsubscribed', (topic, client) => {
+        if (!client) return;
 
-		socket.emit('debug', {
-			type: 'SUBSCRIBE',
-			msg: 'Client "' + client.id + '" unsubscribed from "' + topic + '"'
-		});
-	});
+        socket.emit('debug', {
+            type: 'SUBSCRIBE',
+            msg: 'Client "' + client.id + '" unsubscribed from "' + topic + '"'
+        });
+    });
 }
 // ----------------------------------------------------------------------------
 
 //an object to hold the beacons
 beacons = {}
 
-function publishBeacon(uid){
-    if (!beacons[beacon]){
+function publishBeacon(uid) {
+    if (!beacons[uid]) {
         console.log('no such beacon');
         return;
-    }    
-    internals.mosca.publish({
-        topic: 'android',
-        type: 'android',
-        payload: '{"type": "ANDROID", "count": "'+beacons[beacon]+'", "uid": "'+beacon+'"}'
+    }
+    io.emit('debug', {
+        type: 'UPDATE',
+        client: uid,
+        msg: '{"type": "ANDROID", "count": "' + beacons[uid] + '", "uid": "' + uid + '"}'
     });
 }
 
 // Helper functions
 function setupExpress() {
-	app.set('view engine', 'pug'); // Set express to use pug for rendering HTML
+    app.set('view engine', 'pug'); // Set express to use pug for rendering HTML
 
-	// Setup the 'public' folder to be statically accessable
-	var publicDir = path.join(__dirname, 'public');
-	app.use(express.static(publicDir));
+    // Setup the 'public' folder to be statically accessable
+    var publicDir = path.join(__dirname, 'public');
+    app.use(express.static(publicDir));
 
-	// Setup the paths (Insert any other needed paths here)
-	// ------------------------------------------------------------------------
-	// Home page
-	app.get('/', (req, res) => {
-		res.render('index', {
-			title: 'MQTT Tracker'
-		});
-	});
+    // Setup the paths (Insert any other needed paths here)
+    // ------------------------------------------------------------------------
+    // Home page
+    app.get('/', (req, res) => {
+        res.render('index', {
+            title: 'MQTT Tracker'
+        });
+    });
 
     app.post('/found', (req, res) => {
-        console.log(JSON.stringify(req.params));
-        console.log(req.url);
-        var beacon = req.params.uid;
+        var beacon = req.query.uid;
         if (!beacons[beacon]) beacons[beacon] = 0;
         beacons[beacon]++;
         console.log("found " + beacon);
@@ -150,67 +149,70 @@ function setupExpress() {
     });
 
     app.post('/lost', (req, res) => {
-        var beacon = req.param("uid");
-        if (beacons[beacon]){
+        var beacon = req.query.uid;
+        if (beacons[beacon]) {
             console.log("lost " + beacon);
             beacons[beacon]--;
             internals.mosca.publish({
                 topic: 'android',
                 type: 'android',
-                payload: '{"type": "ANDROID", "count": "'+beacons[beacon]+'", "uid": "'+beacon+'"}'
+                payload: '{"type": "ANDROID", "count": "' + beacons[beacon] + '", "uid": "' + beacon + '"}'
             });
-            if (beacons[beacon] == 0){
+            if (beacons[beacon] == 0) {
                 delete beacons[beacon];
             }
-        }else{
+        } else {
             console.log("lost missing beacon");
         }
     });
 
-	// Basic 404 Page
-	app.use((req, res, next) => {
-		var err = {
-			stack: {},
-			status: 404,
-			message: "Error 404: Page Not Found '" + req.path + "'"
-		};
+    // Basic 404 Page
+    app.use((req, res, next) => {
+        var err = {
+            stack: {},
+            status: 404,
+            message: "Error 404: Page Not Found '" + req.path + "'"
+        };
 
-		// Pass the error to the error handler below
-		next(err);
-	});
+        // Pass the error to the error handler below
+        next(err);
+    });
 
-	// Error handler
-	app.use((err, req, res, next) => {
-		console.log("Error found: ", err);
-		res.status(err.status || 500);
+    // Error handler
+    app.use((err, req, res, next) => {
+        console.log("Error found: ", err);
+        res.status(err.status || 500);
 
-		res.render('error', {
-			title: 'Error',
-			error: err.message
-		});
-	});
+        res.render('error', {
+            title: 'Error',
+            error: err.message
+        });
+    });
 
-	// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-	// Handle killing the server
-	process.on('SIGINT', () => {
-		internals.stop();
-		process.kill(process.pid);
-	});
+    // Handle killing the server
+    process.on('SIGINT', () => {
+        internals.stop();
+        process.kill(process.pid);
+    });
 }
 
+var server;
+var io;
+
 function setupSocket() {
-	var server = require('http').createServer(app);
-	var io = sockets(server);
+    server = require('http').createServer(app);
+    io = sockets(server);
 
-	// Setup the internals
-	internals.start(mqtt => {
-		io.on('connection', socket => {
-			socket_handler(socket, mqtt)
-		});
-	});
+    // Setup the internals
+    internals.start(mqtt => {
+        io.on('connection', socket => {
+            socket_handler(socket, mqtt)
+        });
+    });
 
-	server.listen(conf.PORT, conf.HOST, () => {
-		console.log("Listening on: " + conf.HOST + ":" + conf.PORT);
-	});
+    server.listen(conf.PORT, conf.HOST, () => {
+        console.log("Listening on: " + conf.HOST + ":" + conf.PORT);
+    });
 }

@@ -19,6 +19,10 @@ android {
     }
 }
 
+repositories {
+    jcenter()
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -38,7 +42,10 @@ dependencies {
     // OK Http dependency
     compile 'com.squareup.okio:okio:1.11.0'
 
-    // OK Http
+    // Beacon API
+    compile 'org.altbeacon:android-beacon-library:2+'
+
+    // OK HTTP
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
 
     compile 'com.android.support:appcompat-v7:25.1.0'
